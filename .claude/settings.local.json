@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//private/tmp/**)",
+      "Bash(unzip -o \"/Users/uebetsunawayuuya/Desktop/MathSurface3D_企画書.docx\" -d mathsurface_docx)",
+      "Bash(python3 -c ' *)",
+      "Bash(xcodebuild -project MathSurface.xcodeproj -scheme MathSurface -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' build)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:levelup.gitconnected.com)",
+      "WebFetch(domain:artemnovichkov.com)",
+      "WebFetch(domain:swiftshorts.com)",
+      "WebFetch(domain:hasanalidev.medium.com)"
+    ]
+  }
+}
