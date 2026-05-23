@@ -9,16 +9,20 @@ import SwiftUI
 
 struct LineEditorSheet: View {
     let initialText: String
+    let initialKind: LineFunctionKind
     let onCommit: (LineFunction) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var text: String
+    @State private var kind: LineFunctionKind
     @State private var errorMessage: String?
 
-    init(initialText: String, onCommit: @escaping (LineFunction) -> Void) {
+    init(initialText: String, initialKind: LineFunctionKind = .explicit, onCommit: @escaping (LineFunction) -> Void) {
         self.initialText = initialText
+        self.initialKind = initialKind
         self.onCommit = onCommit
         self._text = State(initialValue: initialText)
+        self._kind = State(initialValue: initialKind)
     }
 
     var body: some View {
@@ -27,8 +31,9 @@ struct LineEditorSheet: View {
                 VStack(spacing: 12) {
                     preview
                         .frame(height: 320)
+                    modePicker
                     formulaCard
-                    FormulaKeyboard(text: $text, variables: ["x"]) {
+                    FormulaKeyboard(text: $text, variables: kind == .explicit ? ["x"] : ["x", "y"]) {
                         applyIfValid()
                     }
                 }
@@ -44,7 +49,16 @@ struct LineEditorSheet: View {
                 }
             }
             .onChange(of: text, initial: true) { _, _ in validate() }
+            .onChange(of: kind) { _, _ in validate() }
         }
+    }
+
+    private var modePicker: some View {
+        Picker("形式", selection: $kind) {
+            Text("y = ...").tag(LineFunctionKind.explicit)
+            Text("0 = ...").tag(LineFunctionKind.implicit)
+        }
+        .pickerStyle(.segmented)
     }
 
     @ViewBuilder
@@ -60,7 +74,7 @@ struct LineEditorSheet: View {
             ContentUnavailableView(
                 "数式を入力してください",
                 systemImage: "function",
-                description: Text("例: sin(x)、x^2、exp(-x^2)")
+                description: Text(kind == .explicit ? "例: sin(x)、x^2、exp(-x^2)" : "例: x^2 + y^2 - 4、x*y - 1")
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -71,7 +85,7 @@ struct LineEditorSheet: View {
         VStack(alignment: .leading, spacing: 4) {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
-                    Text("y =")
+                    Text(kind == .explicit ? "y =" : "0 =")
                         .font(.system(.title3, design: .monospaced).weight(.semibold))
                         .foregroundStyle(.secondary)
                     Text(text.isEmpty ? " " : text)
@@ -100,22 +114,39 @@ struct LineEditorSheet: View {
 
     private var parsedFunction: LineFunction? {
         guard errorMessage == nil else { return nil }
-        guard let evaluator = try? LineFormulaParser.parse(text) else { return nil }
         let span: Double = 10
         let range: ClosedRange<Double> = -span...span
-        return LineFunction(
-            id: "custom-line-\(UUID().uuidString.prefix(8))",
-            name: "カスタム関数",
-            expression: "y = \(text)",
-            category: .special,
-            xRange: range,
-            summary: ""
-        ) { x in evaluator(x) }
+        switch kind {
+        case .explicit:
+            guard let evaluator = try? LineFormulaParser.parse(text) else { return nil }
+            return LineFunction(
+                id: "custom-line-\(UUID().uuidString.prefix(8))",
+                name: "カスタム関数",
+                expression: "y = \(text)",
+                category: .special,
+                xRange: range,
+                summary: ""
+            ) { x in evaluator(x) }
+        case .implicit:
+            guard let evaluator = try? FormulaParser.parse(text) else { return nil }
+            return LineFunction(
+                id: "custom-line-imp-\(UUID().uuidString.prefix(8))",
+                name: "カスタム関数",
+                expression: "0 = \(text)",
+                category: .special,
+                xRange: range,
+                summary: "",
+                implicitEvaluator: { x, y in evaluator(x, y) }
+            )
+        }
     }
 
     private func validate() {
         do {
-            _ = try LineFormulaParser.parse(text)
+            switch kind {
+            case .explicit: _ = try LineFormulaParser.parse(text)
+            case .implicit: _ = try FormulaParser.parse(text)
+            }
             errorMessage = nil
         } catch {
             errorMessage = error.localizedDescription

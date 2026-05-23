@@ -59,7 +59,7 @@ struct LineTab: View {
                     }
                 }
                 .sheet(isPresented: $showEditorSheet) {
-                    LineEditorSheet(initialText: expressionBody(store.currentLine.expression)) { function in
+                    LineEditorSheet(initialText: expressionBody(store.currentLine.expression), initialKind: store.currentLine.kind) { function in
                         store.selectLine(function)
                     }
                 }

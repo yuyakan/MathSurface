@@ -40,7 +40,15 @@ struct LineChartView: View {
         }
     }
 
+    @ViewBuilder
     private var chart: some View {
+        switch function.kind {
+        case .explicit: explicitChart
+        case .implicit: implicitChart
+        }
+    }
+
+    private var explicitChart: some View {
         let xRange = activeXRange
         let samples = sampledPoints(xRange: xRange, count: 400)
         let heightRange = estimatedYRange(samples)
@@ -63,8 +71,6 @@ struct LineChartView: View {
                     .interpolationMethod(.catmullRom)
                 }
             }
-
-            // 軸線（x=0, y=0 の参照線）
             RuleMark(y: .value("axis", 0))
                 .foregroundStyle(.secondary.opacity(0.4))
                 .lineStyle(StrokeStyle(lineWidth: 0.5))
@@ -74,20 +80,8 @@ struct LineChartView: View {
         }
         .chartXScale(domain: xDomain)
         .chartYScale(domain: yDomain)
-        .chartXAxis {
-            AxisMarks(position: .bottom) { value in
-                AxisGridLine().foregroundStyle(.secondary.opacity(0.15))
-                AxisTick()
-                AxisValueLabel()
-            }
-        }
-        .chartYAxis {
-            AxisMarks(position: .leading) { value in
-                AxisGridLine().foregroundStyle(.secondary.opacity(0.15))
-                AxisTick()
-                AxisValueLabel()
-            }
-        }
+        .chartXAxis { AxisMarks(position: .bottom) { _ in AxisGridLine().foregroundStyle(.secondary.opacity(0.15)); AxisTick(); AxisValueLabel() } }
+        .chartYAxis { AxisMarks(position: .leading) { _ in AxisGridLine().foregroundStyle(.secondary.opacity(0.15)); AxisTick(); AxisValueLabel() } }
         .overlay(alignment: .topTrailing) {
             if wasClipped {
                 Label("一部省略", systemImage: "scissors")
@@ -98,6 +92,45 @@ struct LineChartView: View {
                     .padding(10)
             }
         }
+    }
+
+    private var implicitChart: some View {
+        let xRange = activeXRange
+        let segments = ContourBuilder.contourSegments(
+            f: { x, y in function.implicitValue(x: x, y: y) },
+            xRange: xRange,
+            yRange: xRange,
+            level: 0,
+            resolution: 100
+        )
+
+        return Chart {
+            ForEach(0..<segments.count, id: \.self) { i in
+                let seg = segments[i]
+                LineMark(
+                    x: .value("x", seg.start.x),
+                    y: .value("y", seg.start.y),
+                    series: .value("seg", i)
+                )
+                .foregroundStyle(.indigo)
+                LineMark(
+                    x: .value("x", seg.end.x),
+                    y: .value("y", seg.end.y),
+                    series: .value("seg", i)
+                )
+                .foregroundStyle(.indigo)
+            }
+            RuleMark(y: .value("axis", 0))
+                .foregroundStyle(.secondary.opacity(0.4))
+                .lineStyle(StrokeStyle(lineWidth: 0.5))
+            RuleMark(x: .value("axis", 0))
+                .foregroundStyle(.secondary.opacity(0.4))
+                .lineStyle(StrokeStyle(lineWidth: 0.5))
+        }
+        .chartXScale(domain: xRange)
+        .chartYScale(domain: xRange)
+        .chartXAxis { AxisMarks(position: .bottom) { _ in AxisGridLine().foregroundStyle(.secondary.opacity(0.15)); AxisTick(); AxisValueLabel() } }
+        .chartYAxis { AxisMarks(position: .leading) { _ in AxisGridLine().foregroundStyle(.secondary.opacity(0.15)); AxisTick(); AxisValueLabel() } }
     }
 
     private var titleCard: some View {

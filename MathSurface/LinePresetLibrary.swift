@@ -73,7 +73,43 @@ enum LinePresetLibrary {
             expression: "y = sin(x)/x",
             category: .special,
             summary: "信号処理の基本関数。原点で 1、振幅は減衰。"
-        ) { x in abs(x) < 1e-6 ? 1 : sin(x) / x }
+        ) { x in abs(x) < 1e-6 ? 1 : sin(x) / x },
+
+        // MARK: - 陰関数（曲線）
+        LineFunction(
+            id: "line-circle",
+            name: "円",
+            expression: "0 = x² + y² − 9",
+            category: .special,
+            summary: "半径 3 の円。x² + y² = 9 の解。"
+        ) { x, y in x * x + y * y - 9 },
+
+        LineFunction(
+            id: "line-ellipse",
+            name: "楕円",
+            expression: "0 = x²/9 + y²/4 − 1",
+            category: .special,
+            summary: "横半径 3、縦半径 2 の楕円。"
+        ) { x, y in x * x / 9 + y * y / 4 - 1 },
+
+        LineFunction(
+            id: "line-hyperbola",
+            name: "双曲線",
+            expression: "0 = x²/4 − y² − 1",
+            category: .special,
+            summary: "焦点を持つ双曲線。漸近線 y=±x/2。"
+        ) { x, y in x * x / 4 - y * y - 1 },
+
+        LineFunction(
+            id: "line-lemniscate",
+            name: "レムニスケート",
+            expression: "0 = (x²+y²)² − 8(x²−y²)",
+            category: .special,
+            summary: "ベルヌーイの八の字曲線。"
+        ) { x, y in
+            let r2 = x * x + y * y
+            return r2 * r2 - 8 * (x * x - y * y)
+        }
     ]
 
     static func byCategory() -> [(SurfaceCategory, [LineFunction])] {
