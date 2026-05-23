@@ -11,6 +11,7 @@ struct SurfaceView: View {
     let function: SurfaceFunction
     var showsDescription: Bool = true
     var displayRadius: Double? = nil  // 指定があれば function の range を上書き
+    var onEdit: (() -> Void)? = nil   // titleCard タップ時に呼ばれる
 
     @State private var pose: Chart3DPose = Chart3DPose(
         azimuth: .degrees(30),
@@ -34,9 +35,8 @@ struct SurfaceView: View {
                         }
                 )
                 .clipped()
-
             if showsDescription {
-                descriptionPanel
+                titleCard
             }
         }
         .toolbar {
@@ -190,23 +190,37 @@ struct SurfaceView: View {
         return lower...upper
     }
 
-    private var descriptionPanel: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            Text(function.expression)
-                .font(.system(.title3, design: .monospaced).weight(.medium))
-                .foregroundStyle(.primary)
-                .lineLimit(1)
-                .padding(.vertical, 4)
+    private var titleCard: some View {
+        Button {
+            onEdit?()
+        } label: {
+            HStack(spacing: 10) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    Text(function.expression)
+                        .font(.system(.title3, design: .monospaced).weight(.medium))
+                        .foregroundStyle(.primary)
+                        .lineLimit(1)
+                }
+                Spacer(minLength: 8)
+                if onEdit != nil {
+                    Image(systemName: "square.and.pencil")
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.indigo)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 14)
+            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    .stroke(.white.opacity(0.12), lineWidth: 0.5)
+            )
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal, 18)
-        .padding(.vertical, 14)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 22, style: .continuous)
-                .stroke(.white.opacity(0.12), lineWidth: 0.5)
-        )
+        .buttonStyle(.plain)
+        .disabled(onEdit == nil)
         .padding(.horizontal, 14)
+        .padding(.top, 4)
         .padding(.bottom, 10)
     }
 }

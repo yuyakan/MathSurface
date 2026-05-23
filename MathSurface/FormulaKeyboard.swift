@@ -9,18 +9,31 @@ import SwiftUI
 
 struct FormulaKeyboard: View {
     @Binding var text: String
+    var variables: [String] = ["x", "y"]
     let onSubmit: () -> Void
 
     private let cellSpacing: CGFloat = 8
 
-    private let rows: [[KeyboardKey]] = [
-        [.text("7"), .text("8"), .text("9"), .text("("), .text(")"), .backspace],
-        [.text("4"), .text("5"), .text("6"), .text("+"), .text("−"), .clear],
-        [.text("1"), .text("2"), .text("3"), .text("×"), .text("÷"), .text("^")],
-        [.text("0"), .text("."), .variable("x"), .variable("y"), .constant("π"), .constant("e")],
-        [.function("sin"), .function("cos"), .function("tan"), .function("log"), .function("ln"), .function("exp")],
-        [.function("sqrt"), .text("²"), .text("³"), .function("abs"), .function("hypot"), .submit]
-    ]
+    private var rows: [[KeyboardKey]] {
+        let varKeys: [KeyboardKey] = variables.map { .variable($0) }
+        // 変数+定数で 4スロット埋める。足りなければ . と 0 で詰める
+        var fourthRow: [KeyboardKey] = [.text("0"), .text(".")]
+        fourthRow.append(contentsOf: varKeys)
+        fourthRow.append(.constant("π"))
+        fourthRow.append(.constant("e"))
+        // ちょうど6スロットに切り詰める
+        if fourthRow.count > 6 {
+            fourthRow = Array(fourthRow.prefix(6))
+        }
+        return [
+            [.text("7"), .text("8"), .text("9"), .text("("), .text(")"), .backspace],
+            [.text("4"), .text("5"), .text("6"), .text("+"), .text("−"), .clear],
+            [.text("1"), .text("2"), .text("3"), .text("×"), .text("÷"), .text("^")],
+            fourthRow,
+            [.function("sin"), .function("cos"), .function("tan"), .function("log"), .function("ln"), .function("exp")],
+            [.function("sqrt"), .text("²"), .text("³"), .function("abs"), .function("hypot"), .submit]
+        ]
+    }
 
     var body: some View {
         VStack(spacing: cellSpacing) {

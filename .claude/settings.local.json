@@ -11,7 +11,8 @@
       "WebFetch(domain:levelup.gitconnected.com)",
       "WebFetch(domain:artemnovichkov.com)",
       "WebFetch(domain:swiftshorts.com)",
-      "WebFetch(domain:hasanalidev.medium.com)"
+      "WebFetch(domain:hasanalidev.medium.com)",
+      "Bash(grep -v \"showGallery\\\\|Gallery.swift\\\\|GallerySheet\\\\|gallery$\")"
     ]
   }
 }

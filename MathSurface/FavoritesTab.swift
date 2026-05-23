@@ -41,22 +41,35 @@ struct FavoritesTab: View {
     }
 
     private func row(for item: SavedFormula) -> some View {
-        Button {
-            if let function = item.makeFunction() {
-                store.select(function)
+        let isLine = item.isLine
+        let prefix = isLine ? "y" : "z"
+        let icon = isLine ? "chart.xyaxis.line" : "cube"
+        let gradient = isLine
+            ? LinearGradient(colors: [.teal, .blue], startPoint: .topLeading, endPoint: .bottomTrailing)
+            : LinearGradient(colors: [.indigo, .purple], startPoint: .topLeading, endPoint: .bottomTrailing)
+
+        return Button {
+            if isLine {
+                if let function = item.makeLineFunction() {
+                    store.selectLine(function)
+                }
+            } else {
+                if let function = item.makeFunction() {
+                    store.select(function)
+                }
             }
         } label: {
             HStack(spacing: 14) {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(LinearGradient(colors: [.indigo, .purple], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    .fill(gradient)
                     .frame(width: 52, height: 52)
                     .overlay {
-                        Image(systemName: "star.fill")
+                        Image(systemName: icon)
                             .font(.title3.weight(.semibold))
                             .foregroundStyle(.white)
                     }
                 ScrollView(.horizontal, showsIndicators: false) {
-                    Text("z = \(item.expression)")
+                    Text("\(prefix) = \(item.expression)")
                         .font(.system(.title3, design: .monospaced).weight(.medium))
                         .foregroundStyle(.primary)
                         .lineLimit(1)

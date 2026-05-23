@@ -14,21 +14,15 @@ struct ContentView: View {
         TabView(selection: $store.selectedTab) {
             HomeTab()
                 .tabItem {
-                    Label("ホーム", systemImage: "house.fill")
+                    Label("3D", systemImage: "cube")
                 }
                 .tag(AppTab.home)
 
-            GalleryTab()
+            LineTab()
                 .tabItem {
-                    Label("ギャラリー", systemImage: "square.grid.2x2.fill")
+                    Label("2D", systemImage: "chart.xyaxis.line")
                 }
-                .tag(AppTab.gallery)
-
-            FormulaTab()
-                .tabItem {
-                    Label("数式", systemImage: "function")
-                }
-                .tag(AppTab.formula)
+                .tag(AppTab.line)
 
             FavoritesTab()
                 .tabItem {
