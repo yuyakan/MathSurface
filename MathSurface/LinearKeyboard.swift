@@ -9,16 +9,22 @@ import SwiftUI
 
 struct LinearKeyboard: View {
     @Binding var text: String
+    var variable: String = "x"
     let onSubmit: () -> Void
 
     private let cellSpacing: CGFloat = 8
 
-    private let rows: [[Key]] = [
-        [.text("7"), .text("8"), .text("9"), .backspace],
-        [.text("4"), .text("5"), .text("6"), .text("+")],
-        [.text("1"), .text("2"), .text("3"), .text("−")],
-        [.text("0"), .text("."), .text("x"), .submit]
-    ]
+    private var rows: [[Key]] {
+        let fourthRow: [Key] = variable.isEmpty
+            ? [.text("0"), .text("."), .empty, .submit]
+            : [.text("0"), .text("."), .text(variable), .submit]
+        return [
+            [.text("7"), .text("8"), .text("9"), .backspace],
+            [.text("4"), .text("5"), .text("6"), .text("+")],
+            [.text("1"), .text("2"), .text("3"), .text("−")],
+            fourthRow
+        ]
+    }
 
     var body: some View {
         VStack(spacing: cellSpacing) {
@@ -45,7 +51,8 @@ struct LinearKeyboard: View {
     private func keyView(for key: Key) -> some View {
         switch key {
         case .text(let s):
-            keyButton(label: s, tint: s == "x" ? .blue : .primary, fill: s == "x" ? .accentLight(.blue) : .neutral) {
+            let isVar = (s == variable && !variable.isEmpty)
+            keyButton(label: s, tint: isVar ? .blue : .primary, fill: isVar ? .accentLight(.blue) : .neutral) {
                 text.append(s)
             }
         case .backspace:
@@ -56,6 +63,8 @@ struct LinearKeyboard: View {
             keyButton(symbol: "checkmark", tint: .white, fill: .submit) {
                 onSubmit()
             }
+        case .empty:
+            Color.clear.frame(maxWidth: .infinity, minHeight: 46)
         }
     }
 
@@ -102,6 +111,7 @@ struct LinearKeyboard: View {
         case text(String)
         case backspace
         case submit
+        case empty
     }
 
     private enum Fill {

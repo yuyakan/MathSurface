@@ -17,14 +17,19 @@ struct HomeTab: View {
     @State private var showGallerySheet: Bool = false
     @State private var showEditorSheet: Bool = false
     @State private var showSectionKeyboard: Bool = false
+    @State private var showCompareEditor: Bool = false
 
     var body: some View {
         @Bindable var store = store
         NavigationStack {
             VStack(spacing: 0) {
-                SurfaceView(function: store.current, displayRadius: store.displayRadius, onEdit: {
-                    showEditorSheet = true
-                })
+                SurfaceView(
+                    function: store.current,
+                    compareFunction: store.compareFunction,
+                    displayRadius: store.displayRadius,
+                    onEdit: { showEditorSheet = true },
+                    onCompareEdit: { showCompareEditor = true }
+                )
                 if showsCrossSection {
                     crossSectionStrip
                         .padding(.horizontal, 14)
@@ -63,6 +68,21 @@ struct HomeTab: View {
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
+                        if store.compareFunction == nil {
+                            // 比較追加: エディタを起動（決定したら compareFunction に入る）
+                            showCompareEditor = true
+                        } else {
+                            // 既に比較中: 解除
+                            store.compareFunction = nil
+                        }
+                    } label: {
+                        Image(systemName: store.compareFunction == nil ? "plus.rectangle.on.rectangle" : "rectangle.on.rectangle.fill")
+                            .foregroundStyle(store.compareFunction == nil ? Color.secondary : Color.pink)
+                    }
+                    .accessibilityLabel(store.compareFunction == nil ? "比較を追加" : "比較を解除")
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
                         showRangePopover.toggle()
                     } label: {
                         Image(systemName: "ruler")
@@ -82,6 +102,13 @@ struct HomeTab: View {
             .sheet(isPresented: $showEditorSheet) {
                 SurfaceEditorSheet(initialText: expressionBody(store.current.expression)) { function in
                     store.select(function)
+                }
+            }
+            .sheet(isPresented: $showCompareEditor) {
+                let initial = store.compareFunction.map { expressionBody($0.expression) }
+                    ?? expressionBody(store.current.expression)
+                SurfaceEditorSheet(initialText: initial, title: "比較の式") { function in
+                    store.compareFunction = function
                 }
             }
         }
@@ -109,29 +136,37 @@ struct HomeTab: View {
     }
 
     private var sectionInputRow: some View {
-        Button {
-            showSectionKeyboard.toggle()
-        } label: {
-            HStack(spacing: 8) {
-                Text("y =")
-                    .font(.system(.title3, design: .monospaced).weight(.semibold))
-                    .foregroundStyle(.secondary)
-                ScrollView(.horizontal, showsIndicators: false) {
-                    Text(store.crossSectionYFormula.isEmpty ? " " : store.crossSectionYFormula)
-                        .font(.system(.title3, design: .monospaced).weight(.medium))
-                        .foregroundStyle(sectionParsed != nil ? Color.primary : Color.red)
-                        .lineLimit(1)
-                }
-                Spacer()
-                Image(systemName: showSectionKeyboard ? "keyboard.chevron.compact.down" : "square.and.pencil")
-                    .font(.callout.weight(.semibold))
-                    .foregroundStyle(.indigo)
+        @Bindable var store = store
+        return HStack(spacing: 8) {
+            Picker("軸", selection: $store.crossSectionLHS) {
+                Text("y =").tag(SurfaceStore.CrossSectionLHS.yEqualsXFormula)
+                Text("x =").tag(SurfaceStore.CrossSectionLHS.xEqualsYFormula)
+                Text("z =").tag(SurfaceStore.CrossSectionLHS.zConstant)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
-            .background(sectionInputBackground)
+            .pickerStyle(.segmented)
+            .frame(width: 180)
+
+            Button {
+                showSectionKeyboard.toggle()
+            } label: {
+                HStack(spacing: 8) {
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        Text(store.crossSectionFormula.isEmpty ? " " : store.crossSectionFormula)
+                            .font(.system(.title3, design: .monospaced).weight(.medium))
+                            .foregroundStyle(sectionParsed != nil ? Color.primary : Color.red)
+                            .lineLimit(1)
+                    }
+                    Spacer()
+                    Image(systemName: showSectionKeyboard ? "keyboard.chevron.compact.down" : "square.and.pencil")
+                        .font(.callout.weight(.semibold))
+                        .foregroundStyle(.indigo)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(sectionInputBackground)
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
     }
 
     @ViewBuilder
@@ -150,24 +185,56 @@ struct HomeTab: View {
 
     private var sectionKeyboard: some View {
         @Bindable var store = store
-        return LinearKeyboard(text: $store.crossSectionYFormula) {
+        let variable: String
+        switch store.crossSectionLHS {
+        case .yEqualsXFormula: variable = "x"
+        case .xEqualsYFormula: variable = "y"
+        case .zConstant:       variable = ""  // 定数のみ、変数キーは隠す
+        }
+        return LinearKeyboard(text: $store.crossSectionFormula, variable: variable) {
             showSectionKeyboard = false
         }
     }
 
     private var sectionParsed: ((Double) -> Double)? {
-        try? LineFormulaParser.parse(store.crossSectionYFormula)
+        switch store.crossSectionLHS {
+        case .yEqualsXFormula:
+            return try? LineFormulaParser.parse(store.crossSectionFormula)
+        case .xEqualsYFormula:
+            return try? LineFormulaParser.parse(renameVariable(store.crossSectionFormula, from: "y", to: "x"))
+        case .zConstant:
+            // z= モードでは定数値（評価は1回だけ）
+            guard let evaluator = try? LineFormulaParser.parse(store.crossSectionFormula) else { return nil }
+            // x に何を入れても同じ定数を返す前提
+            let value = evaluator(0)
+            return { _ in value }
+        }
     }
 
+    @ViewBuilder
     private var sectionChart: some View {
+        switch store.crossSectionLHS {
+        case .yEqualsXFormula, .xEqualsYFormula:
+            sectionChartLine
+        case .zConstant:
+            sectionChartContour
+        }
+    }
+
+    private var sectionAxisLabel: String {
+        store.crossSectionLHS == .yEqualsXFormula ? "x" : "y"
+    }
+
+    private var sectionChartLine: some View {
         let tRange = -store.displayRadius...store.displayRadius
         let samples = sampledCrossSection(tRange: tRange, count: 300)
+        let axisLabel = sectionAxisLabel
 
         return Chart {
             ForEach(samples, id: \.t) { s in
                 if s.z.isFinite {
                     LineMark(
-                        x: .value("x", s.t),
+                        x: .value(axisLabel, s.t),
                         y: .value("z", s.z)
                     )
                     .foregroundStyle(.indigo)
@@ -183,17 +250,81 @@ struct HomeTab: View {
         }
     }
 
+    private var sectionChartContour: some View {
+        let level = sectionParsed?(0) ?? 0
+        let r = store.displayRadius
+        let segments = ContourBuilder.contourSegments(
+            f: { x, y in store.current.z(x: x, y: y) },
+            xRange: -r...r,
+            yRange: -r...r,
+            level: level,
+            resolution: 80
+        )
+
+        return Chart {
+            ForEach(0..<segments.count, id: \.self) { i in
+                let seg = segments[i]
+                LineMark(
+                    x: .value("x", seg.start.x),
+                    y: .value("y", seg.start.y),
+                    series: .value("seg", i)
+                )
+                .foregroundStyle(.indigo)
+                LineMark(
+                    x: .value("x", seg.end.x),
+                    y: .value("y", seg.end.y),
+                    series: .value("seg", i)
+                )
+                .foregroundStyle(.indigo)
+            }
+            RuleMark(y: .value("axis", 0))
+                .foregroundStyle(.secondary.opacity(0.3))
+                .lineStyle(StrokeStyle(lineWidth: 0.5))
+            RuleMark(x: .value("axis", 0))
+                .foregroundStyle(.secondary.opacity(0.3))
+                .lineStyle(StrokeStyle(lineWidth: 0.5))
+        }
+        .chartXScale(domain: -r...r)
+        .chartYScale(domain: -r...r)
+    }
+
     private func sampledCrossSection(tRange: ClosedRange<Double>, count: Int) -> [(t: Double, z: Double)] {
         guard count > 1 else { return [] }
-        guard let yFn = sectionParsed else { return [] }
+        guard let fn = sectionParsed else { return [] }
         let step = (tRange.upperBound - tRange.lowerBound) / Double(count - 1)
         let surface = store.current
         return (0..<count).map { i in
-            let x = tRange.lowerBound + Double(i) * step
-            let y = yFn(x)
-            let z = surface.z(x: x, y: y)
-            return (x, z)
+            let t = tRange.lowerBound + Double(i) * step
+            let z: Double
+            switch store.crossSectionLHS {
+            case .yEqualsXFormula: z = surface.z(x: t, y: fn(t))
+            case .xEqualsYFormula: z = surface.z(x: fn(t), y: t)
+            case .zConstant:       z = .nan  // 通らない
+            }
+            return (t, z)
         }
+    }
+
+    /// 識別子境界を考慮して変数名を置換（"y" を "x" に等）
+    private func renameVariable(_ input: String, from src: Character, to dst: Character) -> String {
+        let chars = Array(input)
+        var result: [Character] = []
+        result.reserveCapacity(chars.count)
+        for i in 0..<chars.count {
+            let c = chars[i]
+            if c == src {
+                let prev = i > 0 ? chars[i - 1] : nil
+                let next = i + 1 < chars.count ? chars[i + 1] : nil
+                let prevIsAlpha = prev.map { $0.isLetter } ?? false
+                let nextIsAlphaOrDigit = next.map { $0.isLetter || $0.isNumber } ?? false
+                if !prevIsAlpha && !nextIsAlphaOrDigit {
+                    result.append(dst)
+                    continue
+                }
+            }
+            result.append(c)
+        }
+        return String(result)
     }
 
     // MARK: - Range Popover

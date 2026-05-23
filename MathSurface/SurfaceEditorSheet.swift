@@ -9,14 +9,16 @@ import SwiftUI
 
 struct SurfaceEditorSheet: View {
     let initialText: String
+    var title: String = "3Dの式"
     let onCommit: (SurfaceFunction) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var text: String
     @State private var errorMessage: String?
 
-    init(initialText: String, onCommit: @escaping (SurfaceFunction) -> Void) {
+    init(initialText: String, title: String = "3Dの式", onCommit: @escaping (SurfaceFunction) -> Void) {
         self.initialText = initialText
+        self.title = title
         self.onCommit = onCommit
         self._text = State(initialValue: initialText)
     }
@@ -36,7 +38,7 @@ struct SurfaceEditorSheet: View {
                 .padding(.top, 8)
                 .padding(.bottom, 12)
             }
-            .navigationTitle("3D の式")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

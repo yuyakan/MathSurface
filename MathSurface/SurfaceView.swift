@@ -9,9 +9,11 @@ import Spatial
 
 struct SurfaceView: View {
     let function: SurfaceFunction
+    var compareFunction: SurfaceFunction? = nil
     var showsDescription: Bool = true
     var displayRadius: Double? = nil  // 指定があれば function の range を上書き
-    var onEdit: (() -> Void)? = nil   // titleCard タップ時に呼ばれる
+    var onEdit: (() -> Void)? = nil   // titleCard メイン式タップ時
+    var onCompareEdit: (() -> Void)? = nil  // titleCard 比較式タップ時
 
     @State private var pose: Chart3DPose = Chart3DPose(
         azimuth: .degrees(30),
@@ -108,6 +110,22 @@ struct SurfaceView: View {
                     ])
                 )
             )
+
+            if let compareFunction {
+                SurfacePlot(
+                    x: "cx",
+                    y: "cz",
+                    z: "cy"
+                ) { x, z in
+                    guard xRange.contains(x), yRange.contains(z) else { return .nan }
+                    let v = compareFunction.z(x: x, y: z)
+                    if v > clippedHeightRange.upperBound || v < clippedHeightRange.lowerBound {
+                        return .nan
+                    }
+                    return v
+                }
+                .foregroundStyle(Color.pink.opacity(0.55))
+            }
         }
         .chartXScale(domain: xDomain, range: xRangeCG)
         .chartYScale(domain: yDomain, range: yRangeCG)
@@ -191,37 +209,50 @@ struct SurfaceView: View {
     }
 
     private var titleCard: some View {
-        Button {
-            onEdit?()
-        } label: {
-            HStack(spacing: 10) {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    Text(function.expression)
-                        .font(.system(.title3, design: .monospaced).weight(.medium))
-                        .foregroundStyle(.primary)
-                        .lineLimit(1)
-                }
-                Spacer(minLength: 8)
-                if onEdit != nil {
-                    Image(systemName: "square.and.pencil")
-                        .font(.callout.weight(.semibold))
-                        .foregroundStyle(.indigo)
-                }
+        VStack(alignment: .leading, spacing: 8) {
+            Button { onEdit?() } label: {
+                expressionRow(text: function.expression, accent: .indigo, showsPencil: onEdit != nil)
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 14)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
-                    .stroke(.white.opacity(0.12), lineWidth: 0.5)
-            )
+            .buttonStyle(.plain)
+            .disabled(onEdit == nil)
+
+            if let compareFunction {
+                Button { onCompareEdit?() } label: {
+                    expressionRow(text: compareFunction.expression, accent: .pink, showsPencil: onCompareEdit != nil)
+                }
+                .buttonStyle(.plain)
+                .disabled(onCompareEdit == nil)
+            }
         }
-        .buttonStyle(.plain)
-        .disabled(onEdit == nil)
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .stroke(.white.opacity(0.12), lineWidth: 0.5)
+        )
         .padding(.horizontal, 14)
         .padding(.top, 4)
         .padding(.bottom, 10)
+    }
+
+    private func expressionRow(text: String, accent: Color, showsPencil: Bool) -> some View {
+        HStack(spacing: 10) {
+            Circle().fill(accent).frame(width: 8, height: 8)
+            ScrollView(.horizontal, showsIndicators: false) {
+                Text(text)
+                    .font(.system(.title3, design: .monospaced).weight(.medium))
+                    .foregroundStyle(.primary)
+                    .lineLimit(1)
+            }
+            Spacer(minLength: 8)
+            if showsPencil {
+                Image(systemName: "square.and.pencil")
+                    .font(.callout.weight(.semibold))
+                    .foregroundStyle(accent)
+            }
+        }
+        .contentShape(Rectangle())
     }
 }
 
