@@ -20,8 +20,27 @@ struct MathSurfaceApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
         .modelContainer(sharedModelContainer)
+    }
+}
+
+struct RootView: View {
+    @State private var didFinishSplash: Bool = false
+
+    var body: some View {
+        ZStack {
+            ContentView()
+                .opacity(didFinishSplash ? 1 : 0)
+            if !didFinishSplash {
+                SplashView {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        didFinishSplash = true
+                    }
+                }
+                .transition(.opacity)
+            }
+        }
     }
 }
