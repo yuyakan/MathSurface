@@ -50,6 +50,8 @@ struct SettingsTab: View {
                 VStack(spacing: 16) {
                     sectionHeader("外観")
                     themeCard
+                    sectionHeader("情報")
+                    aboutCard
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -58,6 +60,37 @@ struct SettingsTab: View {
             .navigationTitle("設定")
             .navigationBarTitleDisplayMode(.inline)
         }
+    }
+
+    private var aboutCard: some View {
+        VStack(spacing: 0) {
+            NavigationLink {
+                LicensesView()
+            } label: {
+                HStack(spacing: 14) {
+                    Image(systemName: "doc.text")
+                        .font(.title3.weight(.semibold))
+                        .foregroundStyle(.indigo)
+                        .frame(width: 28)
+                    Text("ライセンス")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(.white.opacity(0.12), lineWidth: 0.5)
+        )
     }
 
     private var themeCard: some View {
