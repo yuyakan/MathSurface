@@ -86,25 +86,29 @@ struct LineChartView: View {
         let xDomain = extendedRange(xRange, by: 1.0)
         let yDomain = extendedRange(clippedRange, by: 1.0)
 
+        // サンプル列を範囲外で分断したセグメント群に
+        let mainSegments = splitIntoSegments(samples, in: clippedRange)
+        let compareSegmentsForLine = splitIntoSegments(compareSamples, in: clippedRange)
+
         return Chart {
-            ForEach(samples, id: \.x) { p in
-                if p.y.isFinite, p.y <= clippedRange.upperBound, p.y >= clippedRange.lowerBound {
+            ForEach(0..<mainSegments.count, id: \.self) { si in
+                ForEach(mainSegments[si], id: \.x) { p in
                     LineMark(
                         x: .value("x", p.x),
                         y: .value("y", p.y),
-                        series: .value("series", "main")
+                        series: .value("series", "main-\(si)")
                     )
                     .foregroundStyle(.indigo)
                     .interpolationMethod(.catmullRom)
                 }
             }
             if let _ = compareFunction {
-                ForEach(compareSamples, id: \.x) { p in
-                    if p.y.isFinite, p.y <= clippedRange.upperBound, p.y >= clippedRange.lowerBound {
+                ForEach(0..<compareSegmentsForLine.count, id: \.self) { si in
+                    ForEach(compareSegmentsForLine[si], id: \.x) { p in
                         LineMark(
                             x: .value("x", p.x),
                             y: .value("y", p.y),
-                            series: .value("series", "compare")
+                            series: .value("series", "cmp-\(si)")
                         )
                         .foregroundStyle(.pink)
                         .interpolationMethod(.catmullRom)
@@ -147,6 +151,57 @@ struct LineChartView: View {
                     .padding(10)
             }
         }
+    }
+
+    /// サンプル列を範囲外で分断し、連続セグメント群として返す。
+    /// 各セグメントの最後と最初は、範囲端に線形補間で寄せて描画切れ目を自然にする。
+    private func splitIntoSegments(_ samples: [(x: Double, y: Double)], in range: ClosedRange<Double>) -> [[(x: Double, y: Double)]] {
+        var segments: [[(x: Double, y: Double)]] = []
+        var current: [(x: Double, y: Double)] = []
+
+        func isInside(_ y: Double) -> Bool {
+            y.isFinite && y >= range.lowerBound && y <= range.upperBound
+        }
+        func clipToBoundary(prev: (x: Double, y: Double), curr: (x: Double, y: Double)) -> (x: Double, y: Double)? {
+            // prev は範囲内、curr は範囲外（または NaN）。範囲端まで線形補間。
+            guard curr.y.isFinite else { return nil }
+            let target: Double
+            if curr.y > range.upperBound { target = range.upperBound }
+            else if curr.y < range.lowerBound { target = range.lowerBound }
+            else { return nil }
+            let denom = curr.y - prev.y
+            guard abs(denom) > 1e-12 else { return nil }
+            let t = (target - prev.y) / denom
+            let clamped = max(0, min(1, t))
+            return (prev.x + (curr.x - prev.x) * clamped, target)
+        }
+
+        for i in 0..<samples.count {
+            let p = samples[i]
+            let inside = isInside(p.y)
+            if inside {
+                if current.isEmpty, i > 0 {
+                    // 入口側で前点（範囲外）から境界へ補間
+                    let prev = samples[i - 1]
+                    if let boundary = clipToBoundary(prev: p, curr: prev) {
+                        current.append(boundary)
+                    }
+                }
+                current.append(p)
+            } else {
+                if !current.isEmpty {
+                    // 出口側で現点（範囲外）へ向かう境界補間
+                    let prev = current.last!
+                    if let boundary = clipToBoundary(prev: prev, curr: p) {
+                        current.append(boundary)
+                    }
+                    segments.append(current)
+                    current = []
+                }
+            }
+        }
+        if !current.isEmpty { segments.append(current) }
+        return segments
     }
 
     private func sampledPointsForExplicit(f: LineFunction, xRange: ClosedRange<Double>, count: Int) -> [(x: Double, y: Double)] {

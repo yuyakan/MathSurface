@@ -119,10 +119,7 @@ struct SurfaceView: View {
                 ) { x, z in
                     guard xRange.contains(x), yRange.contains(z) else { return .nan }
                     let v = compareFunction.z(x: x, y: z)
-                    if v > clippedHeightRange.upperBound || v < clippedHeightRange.lowerBound {
-                        return .nan
-                    }
-                    return v
+                    return v.isFinite ? v : .nan
                 }
                 .foregroundStyle(Color.pink.opacity(0.55))
             }
@@ -219,9 +216,17 @@ struct SurfaceView: View {
                 let x = xRange.lowerBound + Double(i) * dx
                 let y = yRange.lowerBound + Double(j) * dy
                 let v = function.z(x: x, y: y)
-                guard v.isFinite else { continue }
-                if v < minV { minV = v }
-                if v > maxV { maxV = v }
+                if v.isFinite {
+                    if v < minV { minV = v }
+                    if v > maxV { maxV = v }
+                }
+                if let cmp = compareFunction {
+                    let cv = cmp.z(x: x, y: y)
+                    if cv.isFinite {
+                        if cv < minV { minV = cv }
+                        if cv > maxV { maxV = cv }
+                    }
+                }
             }
         }
         if !minV.isFinite || !maxV.isFinite || minV == maxV {

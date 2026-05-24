@@ -15,6 +15,7 @@ struct LineTab: View {
     @State private var showGallerySheet: Bool = false
     @State private var showEditorSheet: Bool = false
     @State private var showCompareEditor: Bool = false
+    @State private var revolutionAxis: RevolutionAxis?
 
     var body: some View {
         @Bindable var store = store
@@ -44,6 +45,24 @@ struct LineTab: View {
                             Image(systemName: "square.grid.2x2")
                         }
                         .accessibilityLabel("ギャラリー")
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Menu {
+                            Button {
+                                applyRevolution(axis: .x)
+                            } label: {
+                                Label("x軸まわりに回転", systemImage: "arrow.left.and.right.circle")
+                            }
+                            Button {
+                                applyRevolution(axis: .y)
+                            } label: {
+                                Label("y軸まわりに回転", systemImage: "arrow.up.and.down.circle")
+                            }
+                        } label: {
+                            Image(systemName: "rotate.3d.circle")
+                                .foregroundStyle(.indigo)
+                        }
+                        .accessibilityLabel("回転体として3Dで表示")
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
@@ -88,6 +107,13 @@ struct LineTab: View {
                     LineEditorSheet(initialText: initialText, initialKind: initialKind, title: "比較の式") { function in
                         store.compareLine = function
                     }
+                }
+                .sheet(item: $revolutionAxis) { axis in
+                    RevolutionSheet(
+                        function: store.currentLine,
+                        axis: axis,
+                        radius: store.displayRadius
+                    )
                 }
         }
     }
@@ -148,6 +174,12 @@ struct LineTab: View {
 
     private func normalizedExpression(_ s: String) -> String {
         s.replacingOccurrences(of: " ", with: "")
+    }
+
+    /// 現在の 2D 関数を回転体として専用シートで表示
+    private func applyRevolution(axis: RevolutionAxis) {
+        guard store.currentLine.kind == .explicit else { return }
+        revolutionAxis = axis
     }
 }
 
