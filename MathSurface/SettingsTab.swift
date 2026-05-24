@@ -34,7 +34,7 @@ enum ThemePreference: String, CaseIterable, Identifiable {
     }
 }
 
-struct SettingsTab: View {
+struct SettingsView: View {
     @AppStorage("themePreference") private var themeRaw: String = ThemePreference.system.rawValue
 
     private var theme: Binding<ThemePreference> {
@@ -45,21 +45,19 @@ struct SettingsTab: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    sectionHeader("外観")
-                    themeCard
-                    sectionHeader("情報")
-                    aboutCard
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+        ScrollView {
+            VStack(spacing: 16) {
+                sectionHeader("外観")
+                themeCard
+                sectionHeader("情報")
+                aboutCard
             }
-            .background(backgroundGradient)
-            .navigationTitle("設定")
-            .navigationBarTitleDisplayMode(.inline)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
         }
+        .background(backgroundGradient)
+        .navigationTitle("設定")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     private var aboutCard: some View {

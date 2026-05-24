@@ -37,6 +37,16 @@ struct FavoritesTab: View {
             .background(backgroundGradient)
             .navigationTitle("お気に入り")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    NavigationLink {
+                        SettingsView()
+                    } label: {
+                        Image(systemName: "gear")
+                    }
+                    .accessibilityLabel("設定")
+                }
+            }
         }
     }
 

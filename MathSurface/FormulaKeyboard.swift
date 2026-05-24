@@ -10,11 +10,23 @@ import SwiftUI
 struct FormulaKeyboard: View {
     @Binding var text: String
     var variables: [String] = ["x", "y"]
+    var complexMode: Bool = false
     let onSubmit: () -> Void
 
     private let cellSpacing: CGFloat = 8
 
     private var rows: [[KeyboardKey]] {
+        if complexMode {
+            // 複素数モード: z, i, |, =, arg, conj など複素数特化
+            return [
+                [.text("7"), .text("8"), .text("9"), .text("("), .text(")"), .backspace],
+                [.text("4"), .text("5"), .text("6"), .text("+"), .text("−"), .clear],
+                [.text("1"), .text("2"), .text("3"), .text("×"), .text("÷"), .text("^")],
+                [.text("0"), .text("."), .variable("z"), .constant("i"), .text("|"), .text("=")],
+                [.function("arg"), .function("conj"), .function("Re"), .function("Im"), .constant("π"), .constant("e")],
+                [.function("sin"), .function("cos"), .function("sqrt"), .text("²"), .text("³"), .submit]
+            ]
+        }
         let varKeys: [KeyboardKey] = variables.map { .variable($0) }
         // 変数+定数で 4スロット埋める。足りなければ . と 0 で詰める
         var fourthRow: [KeyboardKey] = [.text("0"), .text(".")]

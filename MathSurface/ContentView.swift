@@ -29,17 +29,23 @@ struct ContentView: View {
                 }
                 .tag(AppTab.line)
 
+            ComplexTab()
+                .tabItem {
+                    Label("複素数", systemImage: "circle.hexagongrid")
+                }
+                .tag(AppTab.complex)
+
+            ProbabilityTab()
+                .tabItem {
+                    Label("確率", systemImage: "chart.bar.fill")
+                }
+                .tag(AppTab.probability)
+
             FavoritesTab()
                 .tabItem {
                     Label("お気に入り", systemImage: "star.fill")
                 }
                 .tag(AppTab.favorites)
-
-            SettingsTab()
-                .tabItem {
-                    Label("設定", systemImage: "gear")
-                }
-                .tag(AppTab.settings)
         }
         .tint(.indigo)
         .environment(store)

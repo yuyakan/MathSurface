@@ -36,6 +36,9 @@ struct LineEditorSheet: View {
                         .frame(height: 320)
                     modePicker
                     formulaCard
+                    if kind == .implicit {
+                        implicitWarningBanner
+                    }
                     FormulaKeyboard(text: $text, variables: kind == .explicit ? ["x"] : ["x", "y"]) {
                         applyIfValid()
                     }
@@ -67,6 +70,18 @@ struct LineEditorSheet: View {
             Text("0 = ...").tag(LineFunctionKind.implicit)
         }
         .pickerStyle(.segmented)
+    }
+
+    private var implicitWarningBanner: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "exclamationmark.triangle.fill")
+            Text("入力された式によっては実際の数学的な軌跡と異なる表示になる場合があります")
+                .lineLimit(2)
+        }
+        .font(.caption2)
+        .foregroundStyle(.orange)
+        .padding(.horizontal, 12).padding(.vertical, 6)
+        .background(.orange.opacity(0.12), in: RoundedRectangle(cornerRadius: 10))
     }
 
     @ViewBuilder
