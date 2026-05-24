@@ -130,6 +130,30 @@ struct SurfaceView: View {
         .chartXScale(domain: xDomain, range: xRangeCG)
         .chartYScale(domain: yDomain, range: yRangeCG)
         .chartZScale(domain: zDomain, range: zRangeCG)
+        .chartXAxis {
+            AxisMarks { _ in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel()
+                    .foregroundStyle(Color.primary)
+            }
+        }
+        .chartYAxis {
+            AxisMarks { _ in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel()
+                    .foregroundStyle(Color.primary)
+            }
+        }
+        .chartZAxis {
+            AxisMarks { _ in
+                AxisGridLine()
+                AxisTick()
+                AxisValueLabel()
+                    .foregroundStyle(Color.primary)
+            }
+        }
         .chart3DPose($pose)
         .overlay(alignment: .topTrailing) {
             if wasClipped {
