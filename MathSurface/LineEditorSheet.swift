@@ -10,16 +10,19 @@ import SwiftUI
 struct LineEditorSheet: View {
     let initialText: String
     let initialKind: LineFunctionKind
+    var title: String = "2D の式"
     let onCommit: (LineFunction) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var text: String
     @State private var kind: LineFunctionKind
     @State private var errorMessage: String?
+    @State private var caretVisible: Bool = true
 
-    init(initialText: String, initialKind: LineFunctionKind = .explicit, onCommit: @escaping (LineFunction) -> Void) {
+    init(initialText: String, initialKind: LineFunctionKind = .explicit, title: String = "2D の式", onCommit: @escaping (LineFunction) -> Void) {
         self.initialText = initialText
         self.initialKind = initialKind
+        self.title = title
         self.onCommit = onCommit
         self._text = State(initialValue: initialText)
         self._kind = State(initialValue: initialKind)
@@ -41,7 +44,7 @@ struct LineEditorSheet: View {
                 .padding(.top, 8)
                 .padding(.bottom, 12)
             }
-            .navigationTitle("2D の式")
+            .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -50,6 +53,11 @@ struct LineEditorSheet: View {
             }
             .onChange(of: text, initial: true) { _, _ in validate() }
             .onChange(of: kind) { _, _ in validate() }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                    caretVisible = false
+                }
+            }
         }
     }
 
@@ -91,6 +99,10 @@ struct LineEditorSheet: View {
                     Text(text.isEmpty ? " " : text)
                         .font(.system(.title3, design: .monospaced).weight(.medium))
                         .lineLimit(1)
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(Color.accentColor)
+                        .frame(width: 2, height: 22)
+                        .opacity(caretVisible ? 1 : 0)
                 }
             }
             if let errorMessage {

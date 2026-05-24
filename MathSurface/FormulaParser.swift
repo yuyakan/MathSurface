@@ -54,9 +54,7 @@ enum FormulaParser {
         do {
             let probe = Expression(
                 normalized,
-                constants: [
-                    "x": 1, "y": 1, "π": .pi, "pi": .pi, "e": M_E
-                ],
+                constants: ["x": 1, "y": 1, "π": .pi, "pi": .pi, "e": M_E],
                 symbols: symbols
             )
             _ = try probe.evaluate()
@@ -67,9 +65,7 @@ enum FormulaParser {
         return { x, y in
             let evaluator = Expression(
                 normalized,
-                constants: [
-                    "x": x, "y": y, "π": .pi, "pi": .pi, "e": M_E
-                ],
+                constants: ["x": x, "y": y, "π": .pi, "pi": .pi, "e": M_E],
                 symbols: symbols
             )
             return (try? evaluator.evaluate()) ?? .nan

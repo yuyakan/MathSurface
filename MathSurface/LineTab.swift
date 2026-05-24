@@ -14,13 +14,18 @@ struct LineTab: View {
     @State private var showRangePopover: Bool = false
     @State private var showGallerySheet: Bool = false
     @State private var showEditorSheet: Bool = false
+    @State private var showCompareEditor: Bool = false
 
     var body: some View {
         @Bindable var store = store
         NavigationStack {
-            LineChartView(function: store.currentLine, displayRadius: store.displayRadius, onEdit: {
-                showEditorSheet = true
-            })
+            LineChartView(
+                function: store.currentLine,
+                compareFunction: store.compareLine,
+                displayRadius: store.displayRadius,
+                onEdit: { showEditorSheet = true },
+                onCompareEdit: { showCompareEditor = true }
+            )
                 .navigationTitle("")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
@@ -39,6 +44,19 @@ struct LineTab: View {
                             Image(systemName: "square.grid.2x2")
                         }
                         .accessibilityLabel("ギャラリー")
+                    }
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            if store.compareLine == nil {
+                                showCompareEditor = true
+                            } else {
+                                store.compareLine = nil
+                            }
+                        } label: {
+                            Image(systemName: store.compareLine == nil ? "plus.rectangle.on.rectangle" : "rectangle.on.rectangle.fill")
+                                .foregroundStyle(store.compareLine == nil ? Color.secondary : Color.pink)
+                        }
+                        .accessibilityLabel(store.compareLine == nil ? "比較を追加" : "比較を解除")
                     }
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
@@ -61,6 +79,14 @@ struct LineTab: View {
                 .sheet(isPresented: $showEditorSheet) {
                     LineEditorSheet(initialText: expressionBody(store.currentLine.expression), initialKind: store.currentLine.kind) { function in
                         store.selectLine(function)
+                    }
+                }
+                .sheet(isPresented: $showCompareEditor) {
+                    let initialText = store.compareLine.map { expressionBody($0.expression) }
+                        ?? expressionBody(store.currentLine.expression)
+                    let initialKind = store.compareLine?.kind ?? store.currentLine.kind
+                    LineEditorSheet(initialText: initialText, initialKind: initialKind, title: "比較の式") { function in
+                        store.compareLine = function
                     }
                 }
         }
@@ -118,6 +144,7 @@ struct LineTab: View {
         }
         return trimmed
     }
+
 
     private func normalizedExpression(_ s: String) -> String {
         s.replacingOccurrences(of: " ", with: "")

@@ -15,6 +15,7 @@ struct SurfaceEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
     @State private var text: String
     @State private var errorMessage: String?
+    @State private var caretVisible: Bool = true
 
     init(initialText: String, title: String = "3Dの式", onCommit: @escaping (SurfaceFunction) -> Void) {
         self.initialText = initialText
@@ -46,6 +47,11 @@ struct SurfaceEditorSheet: View {
                 }
             }
             .onChange(of: text, initial: true) { _, _ in validate() }
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                    caretVisible = false
+                }
+            }
         }
     }
 
@@ -79,6 +85,10 @@ struct SurfaceEditorSheet: View {
                     Text(text.isEmpty ? " " : text)
                         .font(.system(.title3, design: .monospaced).weight(.medium))
                         .lineLimit(1)
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(Color.accentColor)
+                        .frame(width: 2, height: 22)
+                        .opacity(caretVisible ? 1 : 0)
                 }
             }
             if let errorMessage {

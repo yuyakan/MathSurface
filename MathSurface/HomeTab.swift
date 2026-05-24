@@ -384,6 +384,7 @@ struct HomeTab: View {
         return trimmed
     }
 
+
     private func normalizedExpression(_ s: String) -> String {
         s.replacingOccurrences(of: " ", with: "")
     }
