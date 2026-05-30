@@ -8,11 +8,6 @@ import SwiftData
 
 struct ContentView: View {
     @State private var store = SurfaceStore()
-    @AppStorage("themePreference") private var themeRaw: String = ThemePreference.system.rawValue
-
-    private var theme: ThemePreference {
-        ThemePreference(rawValue: themeRaw) ?? .system
-    }
 
     var body: some View {
         @Bindable var store = store
@@ -47,9 +42,9 @@ struct ContentView: View {
                 }
                 .tag(AppTab.favorites)
         }
-        .tint(.indigo)
+        .tint(AppTheme.accent)
         .environment(store)
-        .preferredColorScheme(theme.colorScheme)
+        .preferredColorScheme(.dark)
     }
 }
 

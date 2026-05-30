@@ -27,23 +27,26 @@ struct ProbabilityTab: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 8) {
-                Picker("分布", selection: $distribution) {
-                    ForEach(ProbabilityDistribution.allCases) { d in
-                        Text(d.rawValue).tag(d)
+            ZStack {
+                AppTheme.backgroundGradient.ignoresSafeArea()
+                VStack(spacing: 8) {
+                    Picker("分布", selection: $distribution) {
+                        ForEach(ProbabilityDistribution.allCases) { d in
+                            Text(d.rawValue).tag(d)
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 14)
-                .padding(.top, 8)
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 8)
 
-                ScrollView {
-                    VStack(spacing: 12) {
-                        chart
-                            .frame(height: 360)
-                            .padding(.horizontal, 14)
-                        descriptionCard
-                        parameterCards
+                    ScrollView {
+                        VStack(spacing: 12) {
+                            chart
+                                .frame(height: 360)
+                                .padding(.horizontal, 14)
+                            descriptionCard
+                            parameterCards
+                        }
                     }
                 }
             }

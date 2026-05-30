@@ -22,7 +22,9 @@ struct HomeTab: View {
     var body: some View {
         @Bindable var store = store
         NavigationStack {
-            VStack(spacing: 0) {
+            ZStack {
+                AppTheme.backgroundGradient.ignoresSafeArea()
+                VStack(spacing: 0) {
                 SurfaceView(
                     function: store.current,
                     compareFunction: store.compareFunction,
@@ -35,6 +37,7 @@ struct HomeTab: View {
                         .padding(.horizontal, 14)
                         .padding(.bottom, 10)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
                 }
             }
             .animation(.easeInOut(duration: 0.2), value: showsCrossSection)

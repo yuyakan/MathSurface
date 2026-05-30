@@ -13,7 +13,7 @@ struct SplashView: View {
 
     var body: some View {
         ZStack {
-            Color(.systemBackground).ignoresSafeArea()
+            AppTheme.background.ignoresSafeArea()
 
             Image("splash")
                 .resizable()

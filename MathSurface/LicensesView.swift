@@ -60,12 +60,7 @@ struct LicensesView: View {
     }
 
     private var backgroundGradient: some View {
-        LinearGradient(
-            colors: [Color(.systemBackground), Color(.secondarySystemBackground)],
-            startPoint: .top,
-            endPoint: .bottom
-        )
-        .ignoresSafeArea()
+        AppTheme.backgroundGradient.ignoresSafeArea()
     }
 }
 

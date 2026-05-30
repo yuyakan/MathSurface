@@ -19,22 +19,25 @@ struct ComplexTab: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 8) {
-                Picker("モード", selection: $subMode) {
-                    ForEach(ComplexSubMode.allCases) { m in
-                        Text(m.rawValue).tag(m)
+            ZStack {
+                AppTheme.backgroundGradient.ignoresSafeArea()
+                VStack(spacing: 8) {
+                    Picker("モード", selection: $subMode) {
+                        ForEach(ComplexSubMode.allCases) { m in
+                            Text(m.rawValue).tag(m)
+                        }
                     }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, 14)
-                .padding(.top, 8)
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, 14)
+                    .padding(.top, 8)
 
-                ScrollView {
-                    Group {
-                        switch subMode {
-                        case .locus: ComplexLocusView()
-                        case .arithmetic: ComplexArithmeticView()
-                        case .power: ComplexPowerView()
+                    ScrollView {
+                        Group {
+                            switch subMode {
+                            case .locus: ComplexLocusView()
+                            case .arithmetic: ComplexArithmeticView()
+                            case .power: ComplexPowerView()
+                            }
                         }
                     }
                 }

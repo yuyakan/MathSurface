@@ -65,22 +65,26 @@ struct SurfaceView: View {
         let xRange = activeXRange
         let yRange = activeYRange
         let rawHeightRange = estimatedHeightRange(xRange: xRange, yRange: yRange)
-        let xyRadius = max(halfExtent(xRange), halfExtent(yRange))
-        let clipLimit = xyRadius * 2
-        let clippedHeightRange = clipped(rawHeightRange, to: clipLimit)
-        let wasClipped = (rawHeightRange.lowerBound < clippedHeightRange.lowerBound)
-            || (rawHeightRange.upperBound > clippedHeightRange.upperBound)
+        // クリップ撤廃: 関数の実値域をそのまま使う
+        let clippedHeightRange = rawHeightRange
+        let wasClipped = false
 
         // 軸の端の数値ラベルがビュー境界に隠れないよう、domain を少し広げる
         let xDomain = extendedRange(xRange, by: 1.0)
         let zDomain = extendedRange(yRange, by: 1.0)
         let yDomain = extendedRange(clippedHeightRange, by: width(clippedHeightRange) * 0.1)
 
-        // 3軸の物理アスペクトを保つため、最大幅を基準に range を比例配分
-        let maxWidth = max(width(xDomain), max(width(yDomain), width(zDomain)))
-        let xRangeCG = proportionalRange(width: width(xDomain), maxWidth: maxWidth)
-        let yRangeCG = proportionalRange(width: width(yDomain), maxWidth: maxWidth)
-        let zRangeCG = proportionalRange(width: width(zDomain), maxWidth: maxWidth)
+        // xy 軸の最大幅を基準に物理長さを比例配分
+        let maxXYWidth = max(width(xDomain), width(zDomain))
+        let xRangeCG = proportionalRange(width: width(xDomain), maxWidth: maxXYWidth)
+        let zRangeCG = proportionalRange(width: width(zDomain), maxWidth: maxXYWidth)
+        // y軸: 値域が xy より広い場合だけ、xy と同じ物理長に圧縮
+        let yRangeCG: ClosedRange<CGFloat>
+        if width(yDomain) <= maxXYWidth {
+            yRangeCG = proportionalRange(width: width(yDomain), maxWidth: maxXYWidth)
+        } else {
+            yRangeCG = -0.5...0.5
+        }
 
         return Chart3D {
             SurfacePlot(
@@ -88,28 +92,10 @@ struct SurfaceView: View {
                 y: "z",
                 z: "y"
             ) { x, z in
-                // 元の描画範囲外と高さクリップ範囲外は描画しない
-                guard xRange.contains(x), yRange.contains(z) else {
-                    return .nan
-                }
-                let v = function.z(x: x, y: z)
-                if v > clippedHeightRange.upperBound || v < clippedHeightRange.lowerBound {
-                    return .nan
-                }
-                return v
+                // 範囲チェックなし: Chart3D が domain で領域を制御
+                return function.z(x: x, y: z)
             }
-            .foregroundStyle(
-                .heightBased(
-                    Gradient(colors: [
-                        .blue,
-                        .cyan,
-                        .green,
-                        .yellow,
-                        .orange,
-                        .red
-                    ])
-                )
-            )
+            .foregroundStyle(.heightBased(surfaceGradient, yRange: CGFloat(clippedHeightRange.lowerBound)...CGFloat(clippedHeightRange.upperBound)))
 
             if let compareFunction {
                 SurfacePlot(
@@ -117,7 +103,6 @@ struct SurfaceView: View {
                     y: "cz",
                     z: "cy"
                 ) { x, z in
-                    guard xRange.contains(x), yRange.contains(z) else { return .nan }
                     let v = compareFunction.z(x: x, y: z)
                     return v.isFinite ? v : .nan
                 }
@@ -127,30 +112,9 @@ struct SurfaceView: View {
         .chartXScale(domain: xDomain, range: xRangeCG)
         .chartYScale(domain: yDomain, range: yRangeCG)
         .chartZScale(domain: zDomain, range: zRangeCG)
-        .chartXAxis {
-            AxisMarks { _ in
-                AxisGridLine()
-                AxisTick()
-                AxisValueLabel()
-                    .foregroundStyle(Color.primary)
-            }
-        }
-        .chartYAxis {
-            AxisMarks { _ in
-                AxisGridLine()
-                AxisTick()
-                AxisValueLabel()
-                    .foregroundStyle(Color.primary)
-            }
-        }
-        .chartZAxis {
-            AxisMarks { _ in
-                AxisGridLine()
-                AxisTick()
-                AxisValueLabel()
-                    .foregroundStyle(Color.primary)
-            }
-        }
+        .chartXAxisLabel("x")
+        .chartYAxisLabel("z")
+        .chartZAxisLabel("y")
         .chart3DPose($pose)
         .overlay(alignment: .topTrailing) {
             if wasClipped {
@@ -198,9 +162,22 @@ struct SurfaceView: View {
         range.upperBound - range.lowerBound
     }
 
+    /// サーフェスの高さベースグラデーション（ダーク背景に映える配色、明度抑え)
+    private var surfaceGradient: Gradient {
+        Gradient(colors: [
+            Color(red: 0.42, green: 0.25, blue: 0.78),
+            Color(red: 0.20, green: 0.68, blue: 0.85),
+            Color(red: 0.36, green: 0.78, blue: 0.20),
+            Color(red: 0.85, green: 0.78, blue: 0.20),
+            Color(red: 0.85, green: 0.32, blue: 0.55),
+            Color(red: 0.85, green: 0.78, blue: 0.78)
+        ])
+    }
+
     private func proportionalRange(width: Double, maxWidth: Double) -> ClosedRange<CGFloat> {
         guard maxWidth > 0 else { return -0.5...0.5 }
-        let half = CGFloat(width / maxWidth) / 2
+        // 0.95 倍で一回り内側に縮め、Chart3D 領域の端で見切れないようにする
+        let half = CGFloat(width / maxWidth) / 2 * 0.95
         return -half...half
     }
 
