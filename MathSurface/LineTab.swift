@@ -107,7 +107,7 @@ struct LineTab: View {
                     let initialText = store.compareLine.map { expressionBody($0.expression) }
                         ?? expressionBody(store.currentLine.expression)
                     let initialKind = store.compareLine?.kind ?? store.currentLine.kind
-                    LineEditorSheet(initialText: initialText, initialKind: initialKind, title: "比較の式") { function in
+                    LineEditorSheet(initialText: initialText, initialKind: initialKind, title: String(localized: "比較の式")) { function in
                         store.compareLine = function
                     }
                 }
@@ -203,7 +203,7 @@ struct LineGallerySheet: View {
                                     Image(systemName: category.symbolName)
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(category.tint)
-                                    Text(category.rawValue)
+                                    Text(category.displayName)
                                         .font(.subheadline.weight(.semibold))
                                     Spacer()
                                 }

@@ -10,7 +10,7 @@ import SwiftUI
 struct LineEditorSheet: View {
     let initialText: String
     let initialKind: LineFunctionKind
-    var title: String = "2D の式"
+    var title: String = String(localized: "2D の式")
     let onCommit: (LineFunction) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -19,7 +19,7 @@ struct LineEditorSheet: View {
     @State private var errorMessage: String?
     @State private var caretVisible: Bool = true
 
-    init(initialText: String, initialKind: LineFunctionKind = .explicit, title: String = "2D の式", onCommit: @escaping (LineFunction) -> Void) {
+    init(initialText: String, initialKind: LineFunctionKind = .explicit, title: String = String(localized: "2D の式"), onCommit: @escaping (LineFunction) -> Void) {
         self.initialText = initialText
         self.initialKind = initialKind
         self.title = title
@@ -97,7 +97,9 @@ struct LineEditorSheet: View {
             ContentUnavailableView(
                 "数式を入力してください",
                 systemImage: "function",
-                description: Text(kind == .explicit ? "例: sin(x)、x^2、exp(-x^2)" : "例: x^2 + y^2 - 4、x*y - 1")
+                description: Text(kind == .explicit
+                    ? String(localized: "例: sin(x)、x^2、exp(-x^2)")
+                    : String(localized: "例: x^2 + y^2 - 4、x*y - 1"))
             )
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -148,7 +150,7 @@ struct LineEditorSheet: View {
             guard let evaluator = try? LineFormulaParser.parse(text) else { return nil }
             return LineFunction(
                 id: "custom-line-\(UUID().uuidString.prefix(8))",
-                name: "カスタム関数",
+                name: String(localized: "カスタム関数"),
                 expression: "y = \(text)",
                 category: .special,
                 xRange: range,
@@ -158,7 +160,7 @@ struct LineEditorSheet: View {
             guard let evaluator = try? FormulaParser.parse(text) else { return nil }
             return LineFunction(
                 id: "custom-line-imp-\(UUID().uuidString.prefix(8))",
-                name: "カスタム関数",
+                name: String(localized: "カスタム関数"),
                 expression: "0 = \(text)",
                 category: .special,
                 xRange: range,

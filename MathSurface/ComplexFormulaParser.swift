@@ -18,9 +18,9 @@ enum ComplexFormulaParseError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .empty: "数式を入力してください"
+        case .empty: String(localized: "数式を入力してください")
         case .invalidSyntax(let msg): msg
-        case .missingEquals: "「=」を含む式を入力してください"
+        case .missingEquals: String(localized: "「=」を含む式を入力してください")
         }
     }
 }
@@ -124,7 +124,7 @@ enum ComplexFormulaParser {
                 while j < chars.count, chars[j].isNumber || chars[j] == "." { j += 1 }
                 let str = String(chars[i..<j])
                 guard let val = Double(str) else {
-                    throw ComplexFormulaParseError.invalidSyntax("数値の解釈に失敗: \(str)")
+                    throw ComplexFormulaParseError.invalidSyntax(String(localized: "数値の解釈に失敗: \(str)"))
                 }
                 tokens.append(.number(val))
                 i = j
@@ -144,7 +144,7 @@ enum ComplexFormulaParser {
             } else if c == "," {
                 tokens.append(.comma); i += 1
             } else {
-                throw ComplexFormulaParseError.invalidSyntax("使えない記号: \(c)")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "使えない記号: \(c)"))
             }
         }
         return tokens
@@ -233,7 +233,7 @@ enum ComplexFormulaParser {
 
         func parsePrimary() throws -> Value {
             guard let t = eat() else {
-                throw ComplexFormulaParseError.invalidSyntax("式が予期せず終了しました")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "式が予期せず終了しました"))
             }
             switch t {
             case .number(let v):
@@ -241,7 +241,7 @@ enum ComplexFormulaParser {
             case .lparen:
                 let v = try parseExpression()
                 guard case .rparen? = eat() else {
-                    throw ComplexFormulaParseError.invalidSyntax("カッコが閉じていません")
+                    throw ComplexFormulaParseError.invalidSyntax(String(localized: "カッコが閉じていません"))
                 }
                 return v
             case .bar:
@@ -249,15 +249,15 @@ enum ComplexFormulaParser {
                 let inner = try parseExpression()
                 barDepth -= 1
                 guard case .bar? = eat() else {
-                    throw ComplexFormulaParseError.invalidSyntax("|...| が閉じていません")
+                    throw ComplexFormulaParseError.invalidSyntax(String(localized: "|...| が閉じていません"))
                 }
                 return .real(inner.asComplex.magnitude)
             case .ident(let name):
                 return try parseIdentifier(name)
             case .op(let c):
-                throw ComplexFormulaParseError.invalidSyntax("予期しない演算子: \(c)")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "予期しない演算子: \(c)"))
             case .rparen, .comma:
-                throw ComplexFormulaParseError.invalidSyntax("構文エラー")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "構文エラー"))
             }
         }
 
@@ -271,7 +271,7 @@ enum ComplexFormulaParser {
                     args.append(try parseExpression())
                 }
                 guard case .rparen? = eat() else {
-                    throw ComplexFormulaParseError.invalidSyntax("関数の ) が見つかりません")
+                    throw ComplexFormulaParseError.invalidSyntax(String(localized: "関数の ) が見つかりません"))
                 }
                 return try callFunction(name, args: args)
             }
@@ -284,7 +284,7 @@ enum ComplexFormulaParser {
             case "pi": return .real(.pi)
             case "e": return .real(M_E)
             default:
-                throw ComplexFormulaParseError.invalidSyntax("使えない記号: \(name)")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "使えない記号: \(name)"))
             }
         }
 
@@ -308,24 +308,24 @@ enum ComplexFormulaParser {
             case ("Im", 1): return .real(args[0].asComplex.im)
             case ("sqrt", 1):
                 if let r = args[0].asReal { return .real(sqrt(r)) }
-                throw ComplexFormulaParseError.invalidSyntax("sqrt は実数引数のみ")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "sqrt は実数引数のみ"))
             case ("sin", 1):
                 if let r = args[0].asReal { return .real(sin(r)) }
-                throw ComplexFormulaParseError.invalidSyntax("sin は実数引数のみ")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "sin は実数引数のみ"))
             case ("cos", 1):
                 if let r = args[0].asReal { return .real(cos(r)) }
-                throw ComplexFormulaParseError.invalidSyntax("cos は実数引数のみ")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "cos は実数引数のみ"))
             case ("tan", 1):
                 if let r = args[0].asReal { return .real(tan(r)) }
-                throw ComplexFormulaParseError.invalidSyntax("tan は実数引数のみ")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "tan は実数引数のみ"))
             case ("exp", 1):
                 if let r = args[0].asReal { return .real(exp(r)) }
-                throw ComplexFormulaParseError.invalidSyntax("exp は実数引数のみ")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "exp は実数引数のみ"))
             case ("log", 1), ("ln", 1):
                 if let r = args[0].asReal { return .real(log(r)) }
-                throw ComplexFormulaParseError.invalidSyntax("log は実数引数のみ")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "log は実数引数のみ"))
             default:
-                throw ComplexFormulaParseError.invalidSyntax("未知の関数: \(name)")
+                throw ComplexFormulaParseError.invalidSyntax(String(localized: "未知の関数: \(name)"))
             }
         }
 
@@ -377,7 +377,7 @@ enum ComplexFormulaParser {
         let parser = Parser(tokens: tokens, x: x, y: y)
         let v = try parser.parseExpression()
         if parser.peek != nil {
-            throw ComplexFormulaParseError.invalidSyntax("末尾に余分なトークン")
+            throw ComplexFormulaParseError.invalidSyntax(String(localized: "末尾に余分なトークン"))
         }
         return v
     }

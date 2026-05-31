@@ -110,7 +110,7 @@ struct HomeTab: View {
             .sheet(isPresented: $showCompareEditor) {
                 let initial = store.compareFunction.map { expressionBody($0.expression) }
                     ?? expressionBody(store.current.expression)
-                SurfaceEditorSheet(initialText: initial, title: "比較の式") { function in
+                SurfaceEditorSheet(initialText: initial, title: String(localized: "比較の式")) { function in
                     store.compareFunction = function
                 }
             }

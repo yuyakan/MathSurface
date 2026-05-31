@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SurfaceEditorSheet: View {
     let initialText: String
-    var title: String = "3Dの式"
+    var title: String = String(localized: "3Dの式")
     let onCommit: (SurfaceFunction) -> Void
 
     @Environment(\.dismiss) private var dismiss
@@ -17,7 +17,7 @@ struct SurfaceEditorSheet: View {
     @State private var errorMessage: String?
     @State private var caretVisible: Bool = true
 
-    init(initialText: String, title: String = "3Dの式", onCommit: @escaping (SurfaceFunction) -> Void) {
+    init(initialText: String, title: String = String(localized: "3Dの式"), onCommit: @escaping (SurfaceFunction) -> Void) {
         self.initialText = initialText
         self.title = title
         self.onCommit = onCommit
@@ -117,7 +117,7 @@ struct SurfaceEditorSheet: View {
         let range: ClosedRange<Double> = -span...span
         return SurfaceFunction(
             id: "custom-\(UUID().uuidString.prefix(8))",
-            name: "カスタム関数",
+            name: String(localized: "カスタム関数"),
             expression: "z = \(text)",
             category: .special,
             xRange: range,

@@ -9,9 +9,15 @@ import SwiftUI
 import Charts
 
 enum ProbabilityDistribution: String, CaseIterable, Identifiable {
-    case binomial = "二項分布"
-    case normal = "正規分布"
+    case binomial
+    case normal
     var id: String { rawValue }
+    var displayName: LocalizedStringResource {
+        switch self {
+        case .binomial: "二項分布"
+        case .normal: "正規分布"
+        }
+    }
 }
 
 struct ProbabilityTab: View {
@@ -32,7 +38,7 @@ struct ProbabilityTab: View {
                 VStack(spacing: 8) {
                     Picker("分布", selection: $distribution) {
                         ForEach(ProbabilityDistribution.allCases) { d in
-                            Text(d.rawValue).tag(d)
+                            Text(d.displayName).tag(d)
                         }
                     }
                     .pickerStyle(.segmented)
@@ -125,9 +131,9 @@ struct ProbabilityTab: View {
         let text: String
         switch distribution {
         case .binomial:
-            text = "二項分布 B(n, p)：n 回の独立試行で、確率 p で成功するときの成功回数 k の確率分布。"
+            text = String(localized: "二項分布 B(n, p)：n 回の独立試行で、確率 p で成功するときの成功回数 k の確率分布。")
         case .normal:
-            text = "正規分布 N(μ, σ²)：平均 μ、標準偏差 σ の連続分布。釣鐘型の曲線。"
+            text = String(localized: "正規分布 N(μ, σ²)：平均 μ、標準偏差 σ の連続分布。釣鐘型の曲線。")
         }
         return HStack(alignment: .top, spacing: 6) {
             Image(systemName: "info.circle").foregroundStyle(.indigo)
@@ -146,15 +152,15 @@ struct ProbabilityTab: View {
         switch distribution {
         case .binomial:
             VStack(spacing: 10) {
-                sliderRow(label: "n（試行回数）", value: $binomialN, range: 1...50, step: 1, format: "%.0f")
-                sliderRow(label: "p（成功確率）", value: $binomialP, range: 0...1, step: 0.01, format: "%.2f")
+                sliderRow(label: String(localized: "n（試行回数）"), value: $binomialN, range: 1...50, step: 1, format: "%.0f")
+                sliderRow(label: String(localized: "p（成功確率）"), value: $binomialP, range: 0...1, step: 0.01, format: "%.2f")
             }
             .padding(.horizontal, 14)
             .padding(.bottom, 14)
         case .normal:
             VStack(spacing: 10) {
-                sliderRow(label: "μ（平均）", value: $normalMu, range: -5...5, step: 0.1, format: "%.1f")
-                sliderRow(label: "σ（標準偏差）", value: $normalSigma, range: 0.1...5, step: 0.1, format: "%.1f")
+                sliderRow(label: String(localized: "μ（平均）"), value: $normalMu, range: -5...5, step: 0.1, format: "%.1f")
+                sliderRow(label: String(localized: "σ（標準偏差）"), value: $normalSigma, range: 0.1...5, step: 0.1, format: "%.1f")
             }
             .padding(.horizontal, 14)
             .padding(.bottom, 14)

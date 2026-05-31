@@ -15,7 +15,7 @@ enum FormulaParseError: Error, LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case .empty: "数式を入力してください"
+        case .empty: String(localized: "数式を入力してください")
         case .invalidSyntax(let msg): msg
         }
     }
@@ -72,16 +72,16 @@ enum FormulaParser {
         }
     }
 
-    /// Expression ライブラリの英語エラーを日本語の短い説明に変換
+    /// Expression ライブラリの英語エラーを短い説明に変換（ローカライズ済み）
     private static func humanReadable(_ message: String) -> String {
         let lower = message.lowercased()
-        if lower.contains("missing") && lower.contains("parenthes") { return "カッコが閉じていません" }
-        if lower.contains("unexpected") { return "式の書き方が正しくありません" }
-        if lower.contains("empty") { return "式が空です" }
-        if lower.contains("undefined") || lower.contains("unknown") { return "使えない記号があります" }
-        if lower.contains("argument") { return "関数の引数の数が違います" }
-        if lower.contains("operand") { return "演算子の前後を確認してください" }
-        return "式を確認してください"
+        if lower.contains("missing") && lower.contains("parenthes") { return String(localized: "カッコが閉じていません") }
+        if lower.contains("unexpected") { return String(localized: "式の書き方が正しくありません") }
+        if lower.contains("empty") { return String(localized: "式が空です") }
+        if lower.contains("undefined") || lower.contains("unknown") { return String(localized: "使えない記号があります") }
+        if lower.contains("argument") { return String(localized: "関数の引数の数が違います") }
+        if lower.contains("operand") { return String(localized: "演算子の前後を確認してください") }
+        return String(localized: "式を確認してください")
     }
 
     /// 入力中に使われる装飾的な記号を ASCII / Expression が解釈できる形に正規化
@@ -107,9 +107,9 @@ enum FormulaParser {
         return s
     }
 
-    /// 省略乗算を補完する: "2x" → "2*x"、")(", "2(", ")x" など
+    /// 省略乗算を補完する: "2x" → "2*x"、")(", "2(", ")x"、"xy" → "x*y" など
     private static func insertImplicitMultiplication(_ input: String) -> String {
-        let chars = Array(input)
+        let chars = splitVariableRuns(Array(input))
         guard !chars.isEmpty else { return input }
         var result: [Character] = []
         result.reserveCapacity(chars.count)
@@ -124,6 +124,36 @@ enum FormulaParser {
             }
         }
         return String(result)
+    }
+
+    /// 英字塊が単一文字変数 (x, y, π) のみで構成される場合に各文字の間に '*' を挟む。
+    /// 関数名 (sin, cos, ...) や定数 (pi, e, ln) は変数ではないので分割しない。
+    private static func splitVariableRuns(_ chars: [Character]) -> [Character] {
+        guard !chars.isEmpty else { return chars }
+        let singleVars: Set<Character> = ["x", "y", "π"]
+        var result: [Character] = []
+        result.reserveCapacity(chars.count)
+        var i = 0
+        while i < chars.count {
+            if chars[i].isLetter {
+                var j = i
+                while j < chars.count, chars[j].isLetter { j += 1 }
+                let run = chars[i..<j]
+                if run.allSatisfy({ singleVars.contains($0) }) {
+                    for (k, c) in run.enumerated() {
+                        if k > 0 { result.append("*") }
+                        result.append(c)
+                    }
+                } else {
+                    result.append(contentsOf: run)
+                }
+                i = j
+            } else {
+                result.append(chars[i])
+                i += 1
+            }
+        }
+        return result
     }
 
     private static func needsImplicitMul(left: Character, right: Character, leftIndex: Int, in chars: [Character]) -> Bool {

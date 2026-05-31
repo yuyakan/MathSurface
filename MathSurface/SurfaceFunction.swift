@@ -7,12 +7,21 @@ import Foundation
 import SwiftUI
 
 enum SurfaceCategory: String, CaseIterable, Identifiable {
-    case polynomial = "多項式"
-    case trigonometric = "三角関数"
-    case exponential = "指数・対数"
-    case special = "特殊曲面"
+    case polynomial
+    case trigonometric
+    case exponential
+    case special
 
     var id: String { rawValue }
+
+    var displayName: LocalizedStringResource {
+        switch self {
+        case .polynomial: "多項式"
+        case .trigonometric: "三角関数"
+        case .exponential: "指数・対数"
+        case .special: "特殊曲面"
+        }
+    }
 
     var symbolName: String {
         switch self {

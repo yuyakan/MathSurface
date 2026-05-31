@@ -16,33 +16,33 @@ struct ComplexLocusPreset: Identifiable {
 
 enum ComplexLocusPresetLibrary {
     static let categories: [(name: String, presets: [ComplexLocusPreset])] = [
-        ("円", [
-            ComplexLocusPreset(name: "単位円", formula: "|z| = 1", summary: "原点中心、半径1"),
-            ComplexLocusPreset(name: "中心α・半径r", formula: "|z - (1+i)| = 2", summary: "中心 (1,1)、半径 2"),
-            ComplexLocusPreset(name: "アポロニウスの円", formula: "|z - 1| = 2|z + 1|", summary: "2点から距離の比が一定"),
-            ComplexLocusPreset(name: "直径の円", formula: "Re((z-1)/(z+1)) = 0", summary: "1 と −1 を直径とする円"),
+        (String(localized: "円"), [
+            ComplexLocusPreset(name: String(localized: "単位円"), formula: "|z| = 1", summary: String(localized: "原点中心、半径1")),
+            ComplexLocusPreset(name: String(localized: "中心α・半径r"), formula: "|z - (1+i)| = 2", summary: String(localized: "中心 (1,1)、半径 2")),
+            ComplexLocusPreset(name: String(localized: "アポロニウスの円"), formula: "|z - 1| = 2|z + 1|", summary: String(localized: "2点から距離の比が一定")),
+            ComplexLocusPreset(name: String(localized: "直径の円"), formula: "Re((z-1)/(z+1)) = 0", summary: String(localized: "1 と −1 を直径とする円")),
         ]),
-        ("直線", [
-            ComplexLocusPreset(name: "実軸", formula: "Im(z) = 0", summary: "y = 0"),
-            ComplexLocusPreset(name: "虚軸", formula: "Re(z) = 0", summary: "x = 0"),
-            ComplexLocusPreset(name: "y = x", formula: "Re(z) = Im(z)", summary: "45°の直線"),
-            ComplexLocusPreset(name: "垂直二等分線", formula: "|z - 1| = |z + i|", summary: "2点 1 と −i から等距離"),
-            ComplexLocusPreset(name: "水平線", formula: "Im(z) = 2", summary: "y = 2 の直線"),
+        (String(localized: "直線"), [
+            ComplexLocusPreset(name: String(localized: "実軸"), formula: "Im(z) = 0", summary: "y = 0"),
+            ComplexLocusPreset(name: String(localized: "虚軸"), formula: "Re(z) = 0", summary: "x = 0"),
+            ComplexLocusPreset(name: "y = x", formula: "Re(z) = Im(z)", summary: String(localized: "45°の直線")),
+            ComplexLocusPreset(name: String(localized: "垂直二等分線"), formula: "|z - 1| = |z + i|", summary: String(localized: "2点 1 と −i から等距離")),
+            ComplexLocusPreset(name: String(localized: "水平線"), formula: "Im(z) = 2", summary: String(localized: "y = 2 の直線")),
         ]),
-        ("半直線・偏角", [
-            ComplexLocusPreset(name: "原点から π/4", formula: "arg(z) = pi/4", summary: "偏角 45°の半直線"),
-            ComplexLocusPreset(name: "1から π/4", formula: "arg(z - 1) = pi/4", summary: "(1, 0) から 45°方向"),
-            ComplexLocusPreset(name: "1からπ/2", formula: "arg(z - 1) = pi/2", summary: "(1, 0) から真上"),
+        (String(localized: "半直線・偏角"), [
+            ComplexLocusPreset(name: String(localized: "原点から π/4"), formula: "arg(z) = pi/4", summary: String(localized: "偏角 45°の半直線")),
+            ComplexLocusPreset(name: String(localized: "1から π/4"), formula: "arg(z - 1) = pi/4", summary: String(localized: "(1, 0) から 45°方向")),
+            ComplexLocusPreset(name: String(localized: "1からπ/2"), formula: "arg(z - 1) = pi/2", summary: String(localized: "(1, 0) から真上")),
         ]),
-        ("特殊曲線", [
-            ComplexLocusPreset(name: "楕円 (焦点 ±1)", formula: "|z - 1| + |z + 1| = 4", summary: "焦点 ±1 で長軸 4"),
-            ComplexLocusPreset(name: "双曲線 (焦点 ±2)", formula: "|z - 2| - |z + 2| = 2", summary: "焦点 ±2 で差が 2"),
-            ComplexLocusPreset(name: "|z|² = 4", formula: "z * conj(z) = 4", summary: "半径 2 の円（別表記）"),
-            ComplexLocusPreset(name: "レムニスケート風", formula: "|z - 1| * |z + 1| = 1", summary: "2点からの距離の積"),
+        (String(localized: "特殊曲線"), [
+            ComplexLocusPreset(name: String(localized: "楕円 (焦点 ±1)"), formula: "|z - 1| + |z + 1| = 4", summary: String(localized: "焦点 ±1 で長軸 4")),
+            ComplexLocusPreset(name: String(localized: "双曲線 (焦点 ±2)"), formula: "|z - 2| - |z + 2| = 2", summary: String(localized: "焦点 ±2 で差が 2")),
+            ComplexLocusPreset(name: "|z|² = 4", formula: "z * conj(z) = 4", summary: String(localized: "半径 2 の円（別表記）")),
+            ComplexLocusPreset(name: String(localized: "レムニスケート風"), formula: "|z - 1| * |z + 1| = 1", summary: String(localized: "2点からの距離の積")),
         ]),
-        ("発展", [
-            ComplexLocusPreset(name: "実部一定", formula: "Re(z^2) = 1", summary: "双曲線"),
-            ComplexLocusPreset(name: "虚部一定", formula: "Im(z^2) = 2", summary: "双曲線"),
+        (String(localized: "発展"), [
+            ComplexLocusPreset(name: String(localized: "実部一定"), formula: "Re(z^2) = 1", summary: String(localized: "双曲線")),
+            ComplexLocusPreset(name: String(localized: "虚部一定"), formula: "Im(z^2) = 2", summary: String(localized: "双曲線")),
         ])
     ]
 }

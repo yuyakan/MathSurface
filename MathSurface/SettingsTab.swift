@@ -9,7 +9,7 @@ struct SettingsView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                sectionHeader("情報")
+                sectionHeader(String(localized: "情報"))
                 aboutCard
             }
             .padding(.horizontal, 16)

@@ -38,7 +38,7 @@ final class SavedFormula {
             category: .special,
             xRange: range,
             yRange: range,
-            summary: "保存済みのカスタム関数"
+            summary: String(localized: "保存済みのカスタム関数")
         ) { x, y in
             evaluator(x, y)
         }
@@ -55,7 +55,7 @@ final class SavedFormula {
             expression: "y = \(expression)",
             category: .special,
             xRange: range,
-            summary: "保存済みのカスタム関数"
+            summary: String(localized: "保存済みのカスタム関数")
         ) { x in
             evaluator(x)
         }

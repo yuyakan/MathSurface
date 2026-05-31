@@ -22,7 +22,7 @@ struct SurfaceGallerySheet: View {
                                     Image(systemName: category.symbolName)
                                         .font(.subheadline.weight(.semibold))
                                         .foregroundStyle(category.tint)
-                                    Text(category.rawValue)
+                                    Text(category.displayName)
                                         .font(.subheadline.weight(.semibold))
                                     Spacer()
                                 }

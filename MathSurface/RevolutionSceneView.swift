@@ -226,7 +226,7 @@ struct RevolutionSheet: View {
         NavigationStack {
             RevolutionSceneView(function: function, axis: axis, radius: radius)
                 .ignoresSafeArea(edges: .bottom)
-                .navigationTitle("\(function.name) の\(axis.label)回転体")
+                .navigationTitle(axis.revolutionTitle)
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
