@@ -28,6 +28,7 @@ struct MathSurfaceApp: App {
 
 struct RootView: View {
     @State private var didFinishSplash: Bool = false
+    @State private var didStartConsentFlow: Bool = false
 
     var body: some View {
         ZStack {
@@ -41,6 +42,12 @@ struct RootView: View {
                 }
                 .transition(.opacity)
             }
+        }
+        .onAppear {
+            // UIウィンドウが準備できてから、UMP同意フロー → ATT → AdMob初期化を開始する。
+            guard !didStartConsentFlow else { return }
+            didStartConsentFlow = true
+            ConsentManager.shared.gatherConsentAndStart()
         }
     }
 }

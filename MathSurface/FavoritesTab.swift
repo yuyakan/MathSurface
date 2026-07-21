@@ -68,6 +68,7 @@ struct FavoritesTab: View {
                     store.select(function)
                 }
             }
+            InterstitialAdManager.shared.notifyTrigger()
         } label: {
             HStack(spacing: 14) {
                 RoundedRectangle(cornerRadius: 14, style: .continuous)

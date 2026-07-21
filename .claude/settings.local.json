@@ -16,7 +16,8 @@
       "Bash(perl -i -pe 's/\\(GENERATE_INFOPLIST_FILE = YES;\\\\n\\)\\(\\\\s+INFOPLIST_KEY_UIApplicationSceneManifest_Generation\\)/$1\\\\t\\\\t\\\\t\\\\t\\\\tINFOPLIST_KEY_CFBundleDevelopmentRegion = ja;\\\\n$2/g' MathSurface.xcodeproj/project.pbxproj)",
       "Bash(perl -i -0pe 's/\\(GENERATE_INFOPLIST_FILE = YES;\\\\n\\)\\(\\\\s+\\)\\(INFOPLIST_KEY_UIApplicationSceneManifest_Generation\\)/$1$2INFOPLIST_KEY_CFBundleDevelopmentRegion = ja;\\\\n$2$3/g' MathSurface.xcodeproj/project.pbxproj)",
       "Bash(python3 *)",
-      "Bash(xcodebuild -scheme MathSurface -destination 'generic/platform=iOS Simulator' -configuration Debug build)"
+      "Bash(xcodebuild -scheme MathSurface -destination 'generic/platform=iOS Simulator' -configuration Debug build)",
+      "Bash(xcodebuild -project MathSurface.xcodeproj -scheme MathSurface -destination 'generic/platform=iOS Simulator' -resolvePackageDependencies)"
     ]
   }
 }

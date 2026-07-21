@@ -100,11 +100,13 @@ struct HomeTab: View {
                 SurfaceGallerySheet { function in
                     store.select(function)
                     showGallerySheet = false
+                    InterstitialAdManager.shared.notifyTrigger()
                 }
             }
             .sheet(isPresented: $showEditorSheet) {
                 SurfaceEditorSheet(initialText: expressionBody(store.current.expression)) { function in
                     store.select(function)
+                    InterstitialAdManager.shared.notifyTrigger()
                 }
             }
             .sheet(isPresented: $showCompareEditor) {
@@ -371,12 +373,14 @@ struct HomeTab: View {
     private func toggleFavorite() {
         if let match = savedMatch {
             modelContext.delete(match)
+            try? modelContext.save()
         } else {
             let exprBody = expressionBody(store.current.expression)
             let item = SavedFormula(name: store.current.name, expression: exprBody, kind: "surface")
             modelContext.insert(item)
+            try? modelContext.save()
+            InterstitialAdManager.shared.notifyTrigger()
         }
-        try? modelContext.save()
     }
 
     private func expressionBody(_ expression: String) -> String {

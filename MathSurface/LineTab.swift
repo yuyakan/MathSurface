@@ -96,11 +96,13 @@ struct LineTab: View {
                     LineGallerySheet { function in
                         store.selectLine(function)
                         showGallerySheet = false
+                        InterstitialAdManager.shared.notifyTrigger()
                     }
                 }
                 .sheet(isPresented: $showEditorSheet) {
                     LineEditorSheet(initialText: expressionBody(store.currentLine.expression), initialKind: store.currentLine.kind) { function in
                         store.selectLine(function)
+                        InterstitialAdManager.shared.notifyTrigger()
                     }
                 }
                 .sheet(isPresented: $showCompareEditor) {
@@ -158,12 +160,14 @@ struct LineTab: View {
     private func toggleFavorite() {
         if let match = savedMatch {
             modelContext.delete(match)
+            try? modelContext.save()
         } else {
             let exprBody = expressionBody(store.currentLine.expression)
             let item = SavedFormula(name: store.currentLine.name, expression: exprBody, kind: "line")
             modelContext.insert(item)
+            try? modelContext.save()
+            InterstitialAdManager.shared.notifyTrigger()
         }
-        try? modelContext.save()
     }
 
     private func expressionBody(_ expression: String) -> String {
